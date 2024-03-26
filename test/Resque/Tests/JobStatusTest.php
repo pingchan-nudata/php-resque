@@ -2,10 +2,10 @@
 
 namespace Resque\Tests;
 
-use \Resque\Worker\ResqueWorker;
-use \Resque\Job\Status;
-use \Resque\JobHandler;
-use \Resque\Resque;
+use Resque\Worker\ResqueWorker;
+use Resque\Job\Status;
+use Resque\JobHandler;
+use Resque\Resque;
 
 /**
  * Status tests.
@@ -21,7 +21,7 @@ class JobStatusTest extends ResqueTestCase
 	 */
 	protected $worker;
 
-	public function setUp()
+	public function setUp(): void
 	{
 		parent::setUp();
 

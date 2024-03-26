@@ -2,9 +2,9 @@
 
 namespace Resque\Tests;
 
-use \Resque\Redis;
-use \CredisException;
-use \Resque\Resque;
+use Resque\Redis;
+use CredisException;
+use Resque\Resque;
 
 /**
  * Redis tests.
@@ -15,18 +15,16 @@ use \Resque\Resque;
  */
 class RedisTest extends ResqueTestCase
 {
-	/**
-	 * @expectedException \Resque\Exceptions\RedisException
-	 */
 	public function testRedisExceptionsAreSurfaced()
 	{
+		$this->expectException('\Resque\Exceptions\RedisException');
 		$mockCredis = $this->getMockBuilder('Credis_Client')
 			->setMethods(['connect', '__call'])
 			->getMock();
 		$mockCredis->expects($this->any())->method('__call')
 			->will($this->throwException(new CredisException('failure')));
 
-		Resque::setBackend(function($database) use ($mockCredis) {
+		Resque::setBackend(function ($database) use ($mockCredis) {
 			return new Redis('localhost:6379', $database, $mockCredis);
 		});
 		Resque::redis()->ping();
@@ -194,10 +192,10 @@ class RedisTest extends ResqueTestCase
 
 	/**
 	 * @dataProvider bogusDsnStringProvider
-	 * @expectedException InvalidArgumentException
 	 */
 	public function testParsingBogusDsnStringThrowsException($dsn)
 	{
+		$this->expectException(\InvalidArgumentException::class);
 		// The next line should throw an InvalidArgumentException
 		$result = Redis::parseDsn($dsn);
 	}

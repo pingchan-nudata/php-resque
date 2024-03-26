@@ -2,7 +2,7 @@
 
 namespace Resque\Tests;
 
-use \Resque\Logger;
+use Resque\Logger;
 
 /**
  * Logger tests.

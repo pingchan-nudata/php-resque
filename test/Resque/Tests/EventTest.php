@@ -2,13 +2,13 @@
 
 namespace Resque\Tests;
 
-use \Resque\Worker\ResqueWorker;
-use \Resque\Event;
-use \Resque\JobHandler;
-use \Resque\Resque;
-use \Resque\Exceptions\DoNotCreateException;
-use \Resque\Exceptions\DoNotPerformException;
-use \Test_Job;
+use Resque\Worker\ResqueWorker;
+use Resque\Event;
+use Resque\JobHandler;
+use Resque\Resque;
+use Resque\Exceptions\DoNotCreateException;
+use Resque\Exceptions\DoNotPerformException;
+use Test_Job;
 
 /**
  * Event tests.
@@ -21,7 +21,7 @@ class EventTest extends ResqueTestCase
 {
 	private $callbacksHit = array();
 
-	public function setUp()
+	public function setUp(): void
 	{
 		Test_Job::$called = false;
 
@@ -34,7 +34,7 @@ class EventTest extends ResqueTestCase
 		$this->worker->registerWorker();
 	}
 
-	public function tearDown()
+	public function tearDown(): void
 	{
 		Event::clearListeners();
 		$this->callbacksHit = array();
@@ -82,7 +82,7 @@ class EventTest extends ResqueTestCase
 		$this->worker->perform($job);
 		$this->worker->work(0);
 
-		$this->assertContains($callback, $this->callbacksHit, $event . ' callback (' . $callback .') was not called');
+		$this->assertContains($callback, $this->callbacksHit, $event . ' callback (' . $callback . ') was not called');
 	}
 
 	public function testBeforeForkEventCallbackFires()
@@ -97,7 +97,7 @@ class EventTest extends ResqueTestCase
 		$job = $this->getEventTestJob();
 
 		$this->worker->work(0);
-		$this->assertContains($callback, $this->callbacksHit, $event . ' callback (' . $callback .') was not called');
+		$this->assertContains($callback, $this->callbacksHit, $event . ' callback (' . $callback . ') was not called');
 	}
 
 	public function testBeforeEnqueueEventCallbackFires()
@@ -109,7 +109,7 @@ class EventTest extends ResqueTestCase
 		Resque::enqueue('jobs', 'Test_Job', array(
 			'somevar'
 		));
-		$this->assertContains($callback, $this->callbacksHit, $event . ' callback (' . $callback .') was not called');
+		$this->assertContains($callback, $this->callbacksHit, $event . ' callback (' . $callback . ') was not called');
 	}
 
 	public function testBeforePerformEventCanStopWork()
@@ -145,7 +145,7 @@ class EventTest extends ResqueTestCase
 		Resque::enqueue('jobs', 'Test_Job', array(
 			'somevar'
 		));
-		$this->assertContains($callback, $this->callbacksHit, $event . ' callback (' . $callback .') was not called');
+		$this->assertContains($callback, $this->callbacksHit, $event . ' callback (' . $callback . ') was not called');
 	}
 
 	public function testStopListeningRemovesListener()
@@ -160,21 +160,23 @@ class EventTest extends ResqueTestCase
 		$this->worker->perform($job);
 		$this->worker->work(0);
 
-		$this->assertNotContains($callback, $this->callbacksHit,
-			$event . ' callback (' . $callback .') was called though Event::stopListening was called'
+		$this->assertNotContains(
+			$callback,
+			$this->callbacksHit,
+			$event . ' callback (' . $callback . ') was called though Event::stopListening was called'
 		);
 	}
 
 	public function beforePerformEventDontPerformCallback($instance)
 	{
 		$this->callbacksHit[] = __FUNCTION__;
-		throw new DoNotPerformException;
+		throw new DoNotPerformException();
 	}
 
-	public function beforeEnqueueEventDontCreateCallback($queue, $class, $args, $track = false)
+	public function beforeEnqueueEventDontCreateCallback($class, $args, $queue, $id)
 	{
 		$this->callbacksHit[] = __FUNCTION__;
-		throw new DoNotCreateException;
+		throw new DoNotCreateException();
 	}
 
 	public function assertValidEventCallback($function, $job)
@@ -187,7 +189,7 @@ class EventTest extends ResqueTestCase
 		$this->assertEquals($args[0], 'somevar');
 	}
 
-	public function afterEnqueueEventCallback($class, $args)
+	public function afterEnqueueEventCallback($class, $args, $queue, $id)
 	{
 		$this->callbacksHit[] = __FUNCTION__;
 		$this->assertEquals('Test_Job', $class);
@@ -196,7 +198,7 @@ class EventTest extends ResqueTestCase
 		), $args);
 	}
 
-	public function beforeEnqueueEventCallback($job)
+	public function beforeEnqueueEventCallback($class, $args, $queue, $id)
 	{
 		$this->callbacksHit[] = __FUNCTION__;
 	}

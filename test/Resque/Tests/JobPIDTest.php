@@ -2,9 +2,9 @@
 
 namespace Resque\Tests;
 
-use \Resque\Worker\ResqueWorker;
-use \Resque\Job\PID;
-use \Resque\Resque;
+use Resque\Worker\ResqueWorker;
+use Resque\Job\PID;
+use Resque\Resque;
 
 /**
  * PID tests.
@@ -20,7 +20,7 @@ class JobPIDTest extends ResqueTestCase
 	 */
 	protected $worker;
 
-	public function setUp()
+	public function setUp(): void
 	{
 		parent::setUp();
 

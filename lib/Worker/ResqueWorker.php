@@ -207,6 +207,7 @@ class ResqueWorker
 			}
 
 			// Attempt to find and reserve a job
+			Event::trigger('beforeJobFind', $this);
 			$job = false;
 			if (!$this->paused) {
 				if ($blocking === true) {
@@ -220,6 +221,7 @@ class ResqueWorker
 
 				$job = $this->reserve($blocking, $interval);
 			}
+			Event::trigger('afterJobFind', $this);
 
 			if (!$job) {
 				// For an interval of 0, break now - helps with unit testing etc
@@ -472,6 +474,15 @@ class ResqueWorker
 	{
 		$this->logger->log(LogLevel::NOTICE, 'CONT received; resuming job processing');
 		$this->paused = false;
+	}
+
+	/**
+	 * Returns paused status of the worker
+	 * @return bool
+	 */
+	public function isPaused()
+	{
+		return $this->paused;
 	}
 
 	/**

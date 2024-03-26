@@ -2,10 +2,10 @@
 
 namespace Resque\Tests;
 
-use \Resque\Worker\ResqueWorker;
-use \Resque\Stat;
-use \Resque\Resque;
-use \Resque\JobHandler;
+use Resque\Worker\ResqueWorker;
+use Resque\Stat;
+use Resque\Resque;
+use Resque\JobHandler;
 
 /**
  * ResqueWorker tests.

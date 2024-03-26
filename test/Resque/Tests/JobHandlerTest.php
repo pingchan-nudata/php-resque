@@ -2,17 +2,17 @@
 
 namespace Resque\Tests;
 
-use \Resque\Worker\ResqueWorker;
-use \Resque\Resque;
-use \Resque\Redis;
-use \Resque\JobHandler;
-use \Resque\Stat;
-use \Resque\Job\JobInterface;
-use \Resque\Job\FactoryInterface;
-use \Test_Job_With_SetUp;
-use \Test_Job_With_TearDown;
-use \CredisException;
-use \stdClass;
+use Resque\Worker\ResqueWorker;
+use Resque\Resque;
+use Resque\Redis;
+use Resque\JobHandler;
+use Resque\Stat;
+use Resque\Job\JobInterface;
+use Resque\Job\FactoryInterface;
+use Test_Job_With_SetUp;
+use Test_Job_With_TearDown;
+use CredisException;
+use stdClass;
 
 /**
  * JobHandler tests.
@@ -25,7 +25,7 @@ class JobHandlerTest extends ResqueTestCase
 {
 	protected $worker;
 
-	public function setUp()
+	public function setUp(): void
 	{
 		parent::setUp();
 
@@ -40,18 +40,16 @@ class JobHandlerTest extends ResqueTestCase
 		$this->assertTrue((bool)Resque::enqueue('jobs', 'Test_Job'));
 	}
 
-	/**
-	 * @expectedException \Resque\Exceptions\RedisException
-	 */
 	public function testRedisErrorThrowsExceptionOnJobCreation()
 	{
+		$this->expectException('\Resque\Exceptions\RedisException');
 		$mockCredis = $this->getMockBuilder('Credis_Client')
 			->setMethods(['connect', '__call'])
 			->getMock();
 		$mockCredis->expects($this->any())->method('__call')
 			->will($this->throwException(new CredisException('failure')));
 
-		Resque::setBackend(function($database) use ($mockCredis) {
+		Resque::setBackend(function ($database) use ($mockCredis) {
 			return new Redis('localhost:6379', $database, $mockCredis);
 		});
 		Resque::enqueue('jobs', 'This is a test');
@@ -62,18 +60,16 @@ class JobHandlerTest extends ResqueTestCase
 		Resque::enqueue('jobs', 'Test_Job');
 
 		$job = JobHandler::reserve('jobs');
-		if($job == false) {
+		if ($job == false) {
 			$this->fail('Job could not be reserved.');
 		}
 		$this->assertEquals('jobs', $job->queue);
 		$this->assertEquals('Test_Job', $job->payload['class']);
 	}
 
-	/**
-	 * @expectedException InvalidArgumentException
-	 */
 	public function testObjectArgumentsCannotBePassedToJob()
 	{
+		$this->expectException(\InvalidArgumentException::class);
 		$args = new stdClass();
 		$args->test = 'somevalue';
 		Resque::enqueue('jobs', 'Test_Job', $args);
@@ -143,25 +139,21 @@ class JobHandlerTest extends ResqueTestCase
 		$this->worker->perform($job);
 
 		$this->assertEquals(1, Stat::get('failed'));
-		$this->assertEquals(1, Stat::get('failed:'.$this->worker));
+		$this->assertEquals(1, Stat::get('failed:' . $this->worker));
 	}
 
-	/**
-	 * @expectedException \Resque\Exceptions\ResqueException
-	 */
 	public function testJobWithoutPerformMethodThrowsException()
 	{
+		$this->expectException('\Resque\Exceptions\ResqueException');
 		Resque::enqueue('jobs', 'Test_Job_Without_Perform_Method');
 		$job = $this->worker->reserve();
 		$job->worker = $this->worker;
 		$job->perform();
 	}
 
-	/**
-	 * @expectedException Resque\Exceptions\ResqueException
-	 */
 	public function testInvalidJobThrowsException()
 	{
+		$this->expectException('\Resque\Exceptions\ResqueException');
 		Resque::enqueue('jobs', 'Invalid_Job');
 		$job = $this->worker->reserve();
 		$job->worker = $this->worker;
@@ -198,7 +190,8 @@ class JobHandlerTest extends ResqueTestCase
 		$this->assertTrue(Test_Job_With_TearDown::$called);
 	}
 
-	public function testNamespaceNaming() {
+	public function testNamespaceNaming()
+	{
 		$fixture = array(
 			array('test' => 'more:than:one:with:', 'assertValue' => 'more:than:one:with:'),
 			array('test' => 'more:than:one:without', 'assertValue' => 'more:than:one:without:'),
@@ -206,7 +199,7 @@ class JobHandlerTest extends ResqueTestCase
 			array('test' => 'resque:', 'assertValue' => 'resque:'),
 		);
 
-		foreach($fixture as $item) {
+		foreach ($fixture as $item) {
 			Redis::prefix($item['test']);
 			$this->assertEquals(Redis::getPrefix(), $item['assertValue']);
 		}
@@ -363,7 +356,7 @@ class JobHandlerTest extends ResqueTestCase
 		$this->assertEquals($removedItems, 2);
 		$this->assertEquals(Resque::size($queue), 1);
 		$item = Resque::pop($queue);
-		$this->assertInternalType('array', $item['args']);
+		$this->assertIsArray($item['args']);
 		$this->assertEquals(10, $item['args'][0]['bar'], 'Wrong items were dequeued from queue!');
 	}
 
@@ -460,7 +453,6 @@ class JobHandlerTest extends ResqueTestCase
 
 class Some_Job_Class implements JobInterface
 {
-
 	/**
 	 * @return bool
 	 */
@@ -472,7 +464,6 @@ class Some_Job_Class implements JobInterface
 
 class Some_Stub_Factory implements FactoryInterface
 {
-
 	/**
 	 * @param $className
 	 * @param array $args
