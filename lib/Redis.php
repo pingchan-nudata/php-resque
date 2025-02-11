@@ -134,6 +134,26 @@ class Redis
 				$this->driver = $server;
 			} elseif (is_array($server)) {
 				$this->driver = new Credis_Cluster($server);
+			} elseif (is_array($client)) {
+				// This is a quick but hacky solution to allow TSL connection properties
+				// to be set as array using the "client" argument.
+				// Example:
+				//
+				//			$callback = function ($db) use ($host, $args)
+				//			{
+				//				return new Redis(
+				//                  'ssl://master.redis.amazonaws.com',
+				//                  $db,
+				//                  [6379, 1, '', $db, null, null, [
+				//				        'verify_peer' => true,
+				//				        'verify_peer_name' => true,
+				//                      'cafile' = 'cert_path.crt'
+				//				    ]]
+				//              );
+				//			};
+				//			Resque::setBackend($callback);
+				//
+				$this->driver = new Credis_Client($server, ...$client);
 			} else {
 				list($host, $port, $dsnDatabase, $user, $password, $options) = self::parseDsn($server);
 				// $user is not used, only $password
@@ -197,7 +217,7 @@ class Redis
 		$parts = parse_url($dsn);
 
 		// Check the URI scheme
-		$validSchemes = array('redis', 'tcp');
+		$validSchemes = array('redis', 'tcp', 'ssl');
 		if (isset($parts['scheme']) && ! in_array($parts['scheme'], $validSchemes)) {
 			throw new InvalidArgumentException("Invalid DSN. Supported schemes are " . implode(', ', $validSchemes));
 		}

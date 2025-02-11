@@ -165,6 +165,13 @@ class RedisTest extends ResqueTestCase
 				'user', false,
 				array('x' => 'y', 'a' => 'b'),
 			)),
+			array('ssl://user@foobar:1234/12?x=y&a=b', array(
+				'foobar',
+				1234,
+				12,
+				'user', false,
+				array('x' => 'y', 'a' => 'b'),
+			)),
 		);
 	}
 
@@ -199,4 +206,32 @@ class RedisTest extends ResqueTestCase
 		// The next line should throw an InvalidArgumentException
 		$result = Redis::parseDsn($dsn);
 	}
+
+	/***
+	 * Data provider function for "testSetBackend"
+	 *
+	 * @return array
+	 */
+	public function backendStringProvider()
+	{
+		return [
+			['localhost', []],
+			['localhost', [6379, 1,]],
+			['tcp://localhost', [6379, 1, '', 0]],
+		];
+	}
+
+	/**
+	 * @dataProvider backendStringProvider
+	 */
+	public function testSetBackend($host, $args)
+	{
+		$callback = function ($_db) use ($host, $args)
+		{
+			return new Redis($host, 0, $args);
+		};
+		Resque::setBackend($callback);
+		$this->assertTrue((bool)Resque::redis()->ping());
+	}
+
 }

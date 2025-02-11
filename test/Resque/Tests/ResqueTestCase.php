@@ -38,4 +38,12 @@ class ResqueTestCase extends TestCase
 		// Flush redis
 		$this->redis->flushAll();
 	}
+
+	public function tearDown(): void
+	{
+		// flush & reset static cached connection
+		Resque::redis()->flushAll();
+		Resque::redis()->close();
+		Resque::setBackend('localhost');
+	}
 }
